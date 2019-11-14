@@ -13,11 +13,23 @@ app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 
 app.get('/api/items', (req, res) => {
-  res.status(200).send({ items : []})
+  Item.find({}, (err, items) => {
+    if(err) return res.status(500).send({ message: `Something went wrong: ${err}` })
+    if(!items) return res.status(404).send({ message: `There is not items`})
+
+    res.status(200).send({ items })
+  })
 })
 
 app.get('/api/item/:itemId', (req, res) => {
-  
+  let itemId = req.params.itemId
+
+  Item.findById(itemId, (err, item) => {
+    if (err) return res.status(500).send({ message: `Something went wrong: ${err}`})
+    if(!item) return res.status(404).send({ message: `Item does not exist!`})
+
+    res.status(200).send({ item })
+  })
 })
 
 app.post('/api/item', (req, res) => {
@@ -27,7 +39,7 @@ app.post('/api/item', (req, res) => {
   item.description = req.body.description
 
   item.save((err, itemStored) => {
-    if (err) res.status(500).send({ message: `Something went wrong: ${err}` })
+    if (err) return res.status(500).send({ message: `Something went wrong: ${err}` })
 
     res.status(200).send({ item: itemStored })
 
