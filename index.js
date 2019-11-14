@@ -48,11 +48,29 @@ app.post('/api/item', (req, res) => {
 })
 
 app.put('/api/item/:itemId', (req, res) => {
-  
+  let itemId = req.params.itemId
+  let updateData = req.body
+
+
+  Item.findByIdAndUpdate(itemId, updateData, {new:true}, (err, itemUpdated) => {
+    if (err) return res.status(500).send({ message: `Something went wrong: ${err}` })
+
+    res.status(200).send({ item: itemUpdated })
+  })
 })
 
 app.delete('/api/item/:itemId', (req, res) => {
-  
+  let itemId = req.params.itemId
+
+  Item.findById(itemId, (err, item) => {
+    if(err) res.status(500).send({ message: `Something went wrong: ${err}`})
+
+    item.remove(err => {
+      if(err) res.status(500).send({ message: `Something went wrong: ${err}`})
+      res.status(200).send({ message: `Item deleted successfully!`})
+    })
+
+  })
 })
 
 mongoose.connect(`mongodb://localhost:27017/items`, (err, res) => {
