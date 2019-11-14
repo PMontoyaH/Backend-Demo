@@ -4,6 +4,8 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const mongoose = require('mongoose')
 
+const Item = require('./models/Item')
+
 const app = express()
 const port = process.env.PORT || 3001
 
@@ -19,8 +21,18 @@ app.get('/api/item/:itemId', (req, res) => {
 })
 
 app.post('/api/item', (req, res) => {
-  console.log(req.body)
-  res.status(200).send({ message: `Item saved correctly!`})
+  let item = new Item()
+
+  item.name = req.body.name
+  item.description = req.body.description
+
+  item.save((err, itemStored) => {
+    if (err) res.status(500).send({ message: `Something went wrong: ${err}` })
+
+    res.status(200).send({ item: itemStored })
+
+  })
+
 })
 
 app.put('/api/item/:itemId', (req, res) => {
