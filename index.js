@@ -1,83 +1,14 @@
 'use strict'
 
-const express = require('express')
-const bodyParser = require('body-parser')
 const mongoose = require('mongoose')
+const app = require('./app')
+const config = require('./config')
 
-const Item = require('./models/Item')
-
-const app = express()
-const port = process.env.PORT || 3001
-
-app.use(bodyParser.urlencoded({ extended: false }))
-app.use(bodyParser.json())
-
-app.get('/api/items', (req, res) => {
-  Item.find({}, (err, items) => {
-    if(err) return res.status(500).send({ message: `Something went wrong: ${err}` })
-    if(!items) return res.status(404).send({ message: `There is not items`})
-
-    res.status(200).send({ items })
-  })
-})
-
-app.get('/api/item/:itemId', (req, res) => {
-  let itemId = req.params.itemId
-
-  Item.findById(itemId, (err, item) => {
-    if (err) return res.status(500).send({ message: `Something went wrong: ${err}`})
-    if(!item) return res.status(404).send({ message: `Item does not exist!`})
-
-    res.status(200).send({ item })
-  })
-})
-
-app.post('/api/item', (req, res) => {
-  let item = new Item()
-
-  item.name = req.body.name
-  item.description = req.body.description
-
-  item.save((err, itemStored) => {
-    if (err) return res.status(500).send({ message: `Something went wrong: ${err}` })
-
-    res.status(200).send({ item: itemStored })
-
-  })
-
-})
-
-app.put('/api/item/:itemId', (req, res) => {
-  let itemId = req.params.itemId
-  let updateData = req.body
-
-
-  Item.findByIdAndUpdate(itemId, updateData, {new:true}, (err, itemUpdated) => {
-    if (err) return res.status(500).send({ message: `Something went wrong: ${err}` })
-
-    res.status(200).send({ item: itemUpdated })
-  })
-})
-
-app.delete('/api/item/:itemId', (req, res) => {
-  let itemId = req.params.itemId
-
-  Item.findById(itemId, (err, item) => {
-    if(err) res.status(500).send({ message: `Something went wrong: ${err}`})
-
-    item.remove(err => {
-      if(err) res.status(500).send({ message: `Something went wrong: ${err}`})
-      res.status(200).send({ message: `Item deleted successfully!`})
-    })
-
-  })
-})
-
-mongoose.connect(`mongodb://localhost:27017/items`, (err, res) => {
+mongoose.connect(config.db, (err, res) => {
   if(err) throw err
   console.log(`Data base connection established!`)
   
-  app.listen(port, () => {
-    console.log(`API REST running on http://localhost:${port}`)
+  app.listen(config.port, () => {
+    console.log(`API REST running on http://localhost:${config.port}`)
   })
 })
